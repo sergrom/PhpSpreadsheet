@@ -2519,6 +2519,51 @@ class Worksheet implements IComparable
     }
 
     /**
+     * Fill worksheet from values explicit in array.
+     *
+     * @param array $source Source array
+     * @param mixed $nullValue Value in source array that stands for blank cell
+     * @param string $startCell Insert array starting from this cell address as the top left coordinate
+     * @param bool $strictNullComparison Apply strict comparison when testing for null values in the array
+     *
+     * @throws Exception
+     *
+     * @return Worksheet
+     */
+    public function fromArrayValuesExplicit(array $source, $nullValue = null, $startCell = 'A1', $strictNullComparison = false)
+    {
+        //    Convert a 1-D array to 2-D (for ease of looping)
+        if (!is_array(end($source))) {
+            $source = [$source];
+        }
+
+        // start coordinate
+        list($startColumn, $startRow) = Coordinate::coordinateFromString($startCell);
+
+        // Loop through $source
+        foreach ($source as $rowData) {
+            $currentColumn = $startColumn;
+            foreach ($rowData as $cellValue) {
+                if ($strictNullComparison) {
+                    if ($cellValue !== $nullValue) {
+                        // Set cell value explicit
+                        $this->getCell($currentColumn . $startRow)->setValueExplicit($cellValue, DataType::TYPE_STRING);
+                    }
+                } else {
+                    if ($cellValue != $nullValue) {
+                        // Set cell value explicit
+                        $this->getCell($currentColumn . $startRow)->setValueExplicit($cellValue, DataType::TYPE_STRING);
+                    }
+                }
+                ++$currentColumn;
+            }
+            ++$startRow;
+        }
+
+        return $this;
+    }
+
+    /**
      * Create array from a range of cells.
      *
      * @param string $pRange Range of cells (i.e. "A1:B10"), or just one cell (i.e. "A1")
